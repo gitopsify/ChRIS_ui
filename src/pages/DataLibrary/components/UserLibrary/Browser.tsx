@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from 'react'
 import {
   Grid,
   GridItem,
@@ -13,34 +13,37 @@ import {
   KebabToggle,
   DropdownItem,
   Modal,
-} from "@patternfly/react-core";
+  Checkbox,
+} from '@patternfly/react-core'
 import {
   FaFile,
   FaFolder,
   FaTrashAlt,
   FaDownload,
   FaExpand,
-} from "react-icons/fa";
-import FileDetailView from "../../../../components/feed/Preview/FileDetailView";
-import { Paginated } from "./context";
-import FileViewerModel from "../../../../api/models/file-viewer.model";
-import ChrisAPIClient from "../../../../api/chrisapiclient";
-import { Spin } from "antd";
+} from 'react-icons/fa'
+import FileDetailView from '../../../../components/feed/Preview/FileDetailView'
+import { LibraryContext, Paginated } from './context'
+import FileViewerModel from '../../../../api/models/file-viewer.model'
+import ChrisAPIClient from '../../../../api/chrisapiclient'
+import { Spin } from 'antd'
+import { Types } from './context'
 
 interface BrowserInterface {
-  initialPath: string;
-  handleFolderClick: (path: string) => void;
-  folders: string[];
-  files: any[];
+  initialPath: string
+  handleFolderClick: (path: string, prevPath: string) => void
+  folders: string[]
+  files: any[]
   paginated: {
-    [key: string]: Paginated;
-  };
-  handlePagination: (path: string) => void;
-  previewAll: boolean;
-  handleDelete?: (path: string, folder: string) => void;
-  handleDownload?: (path: string, folder: string) => void;
-  browserType: string;
-  username?: string | null;
+    [key: string]: Paginated
+  }
+  handlePagination: (path: string, type: string) => void
+  previewAll: boolean
+  handleDelete?: (path: string, folder: string) => void
+  handleDownload?: (path: string, folder: string) => void
+  browserType: string
+  username?: string | null
+  multipleFileSelect: boolean
 }
 
 export function Browser({
@@ -55,22 +58,28 @@ export function Browser({
   handleDownload,
   browserType,
   username,
+  multipleFileSelect,
 }: BrowserInterface) {
   return (
     <Grid hasGutter>
       {files && files.length > 0
         ? files.map((file) => {
             return (
-              <GridItem key={file.data.fname} sm={12} lg={4}>
-                <FileCard previewAll={previewAll} file={file} />
+              <GridItem key={file.data.fname} sm={12} lg={2}>
+                <FileCard
+                  previewAll={previewAll}
+                  file={file}
+                  multipleFileSelect={multipleFileSelect}
+                  initialPath={initialPath}
+                />
               </GridItem>
-            );
+            )
           })
         : folders &&
           folders.length > 0 &&
           folders.map((folder, index) => {
             return (
-              <GridItem key={`${folder}_${index}`} sm={12} lg={4}>
+              <GridItem key={`${folder}_${index}`} sm={12} lg={2}>
                 <FolderCard
                   browserType={browserType}
                   initialPath={initialPath}
@@ -80,9 +89,10 @@ export function Browser({
                   key={index}
                   folder={folder}
                   username={username}
+                  multipleFileSelect={multipleFileSelect}
                 />
               </GridItem>
-            );
+            )
           })}
 
       {folders &&
@@ -96,7 +106,7 @@ export function Browser({
               <SplitItem isFilled>
                 <Button
                   onClick={() => {
-                    handlePagination(initialPath);
+                    handlePagination(initialPath, 'folder')
                   }}
                   variant="link"
                 >
@@ -118,7 +128,7 @@ export function Browser({
               <SplitItem isFilled>
                 <Button
                   onClick={() => {
-                    handlePagination(initialPath);
+                    handlePagination(initialPath, 'file')
                   }}
                   variant="link"
                 >
@@ -129,13 +139,26 @@ export function Browser({
           </GridItem>
         )}
     </Grid>
-  );
+  )
 }
 
-function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
-  const fileNameArray = file.data.fname.split("/");
-  const fileName = fileNameArray[fileNameArray.length - 1];
-  const [largePreview, setLargePreview] = React.useState(false);
+function FileCard({
+  file,
+  previewAll,
+  multipleFileSelect,
+  initialPath,
+}: {
+  file: any
+  previewAll: boolean
+  multipleFileSelect: boolean
+  initialPath: string
+}) {
+  const { dispatch, state } = useContext(LibraryContext)
+  const { fileSelect } = state
+  const fileNameArray = file.data.fname.split('/')
+  const fileName = fileNameArray[fileNameArray.length - 1]
+  const [largePreview, setLargePreview] = React.useState(false)
+  const path = `${initialPath}/${fileName}`
 
   return (
     <>
@@ -144,9 +167,9 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
           {previewAll && (
             <div
               style={{
-                margin: "-1.15em -1.15em 1em -1.15em",
-                maxHeight: "10em",
-                overflow: "hidden",
+                margin: '-1.15em -1.15em 1em -1.15em',
+                maxHeight: '10em',
+                overflow: 'hidden',
               }}
             >
               <FileDetailView selectedFile={file} preview="small" />
@@ -155,10 +178,38 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
 
           <div
             style={{
-              overflow: "hidden",
+              overflow: 'hidden',
             }}
           >
-            <Button icon={<FaFile />} variant="link" style={{ padding: "0" }}>
+            {multipleFileSelect && (
+              <Checkbox
+                id={path}
+                isChecked={fileSelect.includes(path)}
+                name={path}
+                onChange={(checked: boolean) => {
+                  if (checked) {
+                    dispatch({
+                      type: Types.SET_ADD_FILE_SELECT,
+                      payload: {
+                        path,
+                      },
+                    })
+                  } else {
+                    dispatch({
+                      type: Types.SET_REMOVE_FILE_SELECT,
+                      payload: {
+                        path,
+                      },
+                    })
+                  }
+                }}
+                style={{
+                  marginRight: '0.5em',
+                  padding: '0',
+                }}
+              />
+            )}
+            <Button icon={<FaFile />} variant="link" style={{ padding: '0' }}>
               <b>{elipses(fileName, 20)}</b>
             </Button>
           </div>
@@ -166,10 +217,8 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
             <span>{(file.data.fsize / (1024 * 1024)).toFixed(3)} MB</span>
             <Button
               onClick={async () => {
-                const blob = await file.getFileBlob();
-                const fileNameList = file.data.fname.split("/");
-                const fileName = fileNameList[fileNameList.length - 1];
-                FileViewerModel.downloadFile(blob, fileName);
+                const blob = await file.getFileBlob()
+                FileViewerModel.downloadFile(blob, fileName)
               }}
               variant="link"
               icon={<FaDownload />}
@@ -178,7 +227,7 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
             <Button
               variant="link"
               onClick={() => {
-                setLargePreview(true);
+                setLargePreview(true)
               }}
               icon={<FaExpand />}
             ></Button>
@@ -188,7 +237,7 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
           <Modal
             title="Preview"
             aria-label="viewer"
-            width={"50%"}
+            width={'50%'}
             isOpen={largePreview}
             onClose={() => setLargePreview(false)}
           >
@@ -197,17 +246,18 @@ function FileCard({ file, previewAll }: { file: any; previewAll: boolean }) {
         )}
       </Card>
     </>
-  );
+  )
 }
 
 interface FolderCardInterface {
-  browserType: string;
-  initialPath: string;
-  folder: string;
-  handleFolderClick: (path: string) => void;
-  handleDelete?: (path: string, folder: string) => void;
-  handleDownload?: (path: string, folder: string) => void;
-  username?: string | null;
+  browserType: string
+  initialPath: string
+  folder: string
+  handleFolderClick: (path: string, prevPath: string) => void
+  handleDelete?: (path: string, folder: string) => void
+  handleDownload?: (path: string, folder: string) => void
+  username?: string | null
+  multipleFileSelect: boolean
 }
 
 function FolderCard({
@@ -218,29 +268,33 @@ function FolderCard({
   handleDelete,
   handleDownload,
   username,
+  multipleFileSelect,
 }: FolderCardInterface) {
-  const [dropdown, setDropdown] = useState(false);
-  const [feedName, setFeedName] = useState("");
+  const { dispatch, state } = useContext(LibraryContext)
+  const { fileSelect } = state
+  const [dropdown, setDropdown] = useState(false)
+  const [feedName, setFeedName] = useState('')
+
   const toggle = (
     <KebabToggle
       onToggle={() => setDropdown(!dropdown)}
-      style={{ padding: "0" }}
+      style={{ padding: '0' }}
     />
-  );
+  )
 
   React.useEffect(() => {
     async function fetchFeedName() {
-      if (browserType === "feed" && initialPath === username) {
-        const client = ChrisAPIClient.getClient();
-        const id = folder.split("_")[1];
-        const feed = await client.getFeed(parseInt(id));
-        setFeedName(feed.data.name);
+      if (browserType === 'feed' && initialPath === username) {
+        const client = ChrisAPIClient.getClient()
+        const id = folder.split('_')[1]
+        const feed = await client.getFeed(parseInt(id))
+        setFeedName(feed.data.name)
       }
     }
-    fetchFeedName();
-  }, [browserType, folder, username, initialPath]);
+    fetchFeedName()
+  }, [])
 
-  const pad = <span style={{ padding: "0 0.25em" }} />;
+  const pad = <span style={{ padding: '0 0.25em' }} />
 
   const downloadDropdown = (
     <DropdownItem
@@ -248,27 +302,28 @@ function FolderCard({
       component="button"
       onClick={() => {
         //handleDownload()
-        handleDownload && handleDownload(`${initialPath}/${folder}`, folder);
+        handleDownload && handleDownload(`${initialPath}/${folder}`, folder)
       }}
     >
       <FaDownload />
       {pad} Download
     </DropdownItem>
-  );
+  )
 
   const deleteDropdown = (
     <DropdownItem
       key="delete"
       component="button"
       onClick={() => {
-        handleDelete && handleDelete(`${initialPath}/${folder}`, folder);
+        handleDelete && handleDelete(`${initialPath}/${folder}`, folder)
       }}
     >
       <FaTrashAlt />
       {pad} Delete
     </DropdownItem>
-  );
+  )
 
+  const path = `${initialPath}/${folder}`
   return (
     <Card isHoverable isSelectable isRounded>
       <CardHeader>
@@ -279,17 +334,45 @@ function FolderCard({
             isOpen={dropdown}
             position="right"
             onSelect={() => {
-              setDropdown(false);
+              setDropdown(false)
             }}
             dropdownItems={
-              browserType == "uploads"
+              browserType == 'uploads'
                 ? [deleteDropdown, downloadDropdown]
                 : [downloadDropdown]
             }
           ></Dropdown>
         </CardActions>
-        <Split style={{ overflow: "hidden" }}>
-          <SplitItem style={{ marginRight: "1em" }}>
+        <Split style={{ overflow: 'hidden' }}>
+          <SplitItem style={{ marginRight: '1em' }}>
+            {multipleFileSelect && (
+              <Checkbox
+                id={path}
+                isChecked={fileSelect.includes(path)}
+                name={path}
+                onChange={(checked: boolean) => {
+                  if (checked) {
+                    dispatch({
+                      type: Types.SET_ADD_FILE_SELECT,
+                      payload: {
+                        path,
+                      },
+                    })
+                  } else {
+                    dispatch({
+                      type: Types.SET_REMOVE_FILE_SELECT,
+                      payload: {
+                        path,
+                      },
+                    })
+                  }
+                }}
+                style={{
+                  marginRight: '0.5em',
+                  padding: '0',
+                }}
+              />
+            )}
             <FaFolder />
           </SplitItem>
           <SplitItem isFilled>
@@ -297,11 +380,11 @@ function FolderCard({
               style={{ padding: 0 }}
               variant="link"
               onClick={() => {
-                handleFolderClick(`${initialPath}/${folder}`);
+                handleFolderClick(`${initialPath}/${folder}`, initialPath)
               }}
             >
               <b>
-                {browserType === "feed" && initialPath === username ? (
+                {browserType === 'feed' && initialPath === username ? (
                   !feedName ? (
                     <Spin />
                   ) : (
@@ -316,10 +399,10 @@ function FolderCard({
         </Split>
       </CardHeader>
     </Card>
-  );
+  )
 }
 
 function elipses(str: string, len: number) {
-  if (str.length <= len) return str;
-  return str.slice(0, len - 3) + "...";
+  if (str.length <= len) return str
+  return str.slice(0, len - 3) + '...'
 }

@@ -1,27 +1,28 @@
-import * as React from "react";
-import { Link } from "react-router-dom";
-import ToolbarComponent from "./Toolbar";
-import brandImg from "../../assets/images/logo_chris_dashboard.png";
-import { IUserState } from "../../store/user/types";
+import * as React from 'react'
+import { Link } from 'react-router-dom'
+import ToolbarComponent from './Toolbar'
+import brandImg from '../../assets/images/logo_chris_dashboard.png'
+import { IUserState } from '../../store/user/types'
 import {
   PageHeader,
   PageHeaderTools,
   Brand,
   Badge,
-} from "@patternfly/react-core";
+} from '@patternfly/react-core'
+import Moment from 'react-moment'
 
 interface IHeaderProps {
-  user: IUserState;
-  onNavToggle: () => void;
+  user: IUserState
+  onNavToggle: () => void
 }
 
 const BadgeStyle = {
-  marginRight: "1rem",
-  display: "inline-block",
-  background: "transparent",
-  fontSize: "0.85rem",
-  color: "#8b8d8f",
-};
+  marginRight: '1rem',
+  display: 'inline-block',
+  background: 'transparent',
+  fontSize: '0.85rem',
+  color: '#8b8d8f',
+}
 
 const BadgeStyleLeft = {
   ...BadgeStyle,
@@ -52,7 +53,7 @@ const Header: React.FC<IHeaderProps> = ({
     <PageHeaderTools>
       <Link to="/login">Log In</Link>
     </PageHeaderTools>
-  );
+  )
 
   const brand = (
     <React.Fragment>
@@ -61,14 +62,14 @@ const Header: React.FC<IHeaderProps> = ({
       <Badge key={4} style={BadgeStyle}>
         <span>Version: {process.env.REACT_APP_CHRIS_UI_VERSION} </span>
       </Badge>
-      <Badge key={3} style={BadgeStyle}>
+      <Badge key={3}>
         <span>
-          Latest update:{" "}
-          <Moment format="DD MMM YYYY @ HH:mm">{`2022-04-04T13:00:10.297464-04:00`}</Moment>
+          Latest update:{' '}
+          <Moment format="DD MMM YYYY @ HH:mm">{`2022-05-11T15:00:10.297464-04:00`}</Moment>
         </span>
       </Badge>
     </React.Fragment>
-  );
+  )
 
   return (
     <PageHeader
@@ -79,7 +80,7 @@ const Header: React.FC<IHeaderProps> = ({
       showNavToggle
       onNavToggle={onNavToggle}
     />
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

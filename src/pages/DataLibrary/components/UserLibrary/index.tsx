@@ -11,6 +11,11 @@ import {
   Progress,
   ProgressMeasureLocation,
   ProgressVariant,
+  Alert,
+  AlertGroup,
+  AlertActionLink,
+  ChipGroup,
+  Chip,
 } from "@patternfly/react-core";
 import BrowserContainer from "./BrowserContainer";
 import { FaUpload } from "react-icons/fa";
@@ -19,16 +24,16 @@ import ChrisAPIClient from "../../../../api/chrisapiclient";
 import { LocalFile } from "../../../../components/feed/CreateFeed/types";
 import { useTypedSelector } from "../../../../store/hooks";
 import { LibraryContext, Types } from "./context";
+import { MainRouterContext } from "../../../../routes";
 
 const DataLibrary = () => {
   const username = useTypedSelector((state) => state.user.username);
-  const { state } = useContext(LibraryContext);
+  const { state, dispatch } = useContext(LibraryContext);
+  const router = useContext(MainRouterContext);
   const [uploadFileModal, setUploadFileModal] = React.useState(false);
   const [localFiles, setLocalFiles] = React.useState<LocalFile[]>([]);
   const [directoryName, setDirectoryName] = React.useState("");
-  const { isRoot } = state;
-
-  console.log("STATE", state);
+  const { isRoot, multipleFileSelect, fileSelect } = state;
 
   const rootCheck = Object.keys(isRoot).length > 0;
 
@@ -46,11 +51,24 @@ const DataLibrary = () => {
     setDirectoryName(directoryName);
   };
 
+  const createFeed = () => {
+    router.actions.createFeedWithData(fileSelect);
+  };
+
+  const clearFeed = () => {
+    dispatch({
+      type: Types.SET_CLEAR_FILE_SELECT,
+      payload: {
+        clear: true,
+      },
+    });
+  };
+
   const uploadedFiles = (
     <section>
       <Split>
         <SplitItem>
-          <h3>Uploaded Files</h3>
+          <h3>Uploads</h3>
         </SplitItem>
         <SplitItem style={{ margin: "auto 1em" }} isFilled>
           <hr />
@@ -68,7 +86,7 @@ const DataLibrary = () => {
     <section>
       <Split>
         <SplitItem>
-          <h3>Feed Files</h3>
+          <h3>Completed Analyses</h3>
         </SplitItem>
         <SplitItem style={{ margin: "auto 1em" }} isFilled>
           <hr />
@@ -82,7 +100,7 @@ const DataLibrary = () => {
     <section>
       <Split>
         <SplitItem>
-          <h3>Services Files</h3>
+          <h3>External Services</h3>
         </SplitItem>
         <SplitItem style={{ margin: "auto 1em" }} isFilled>
           <hr />
@@ -94,6 +112,45 @@ const DataLibrary = () => {
 
   return (
     <>
+      {multipleFileSelect && (
+        <AlertGroup isToast>
+          <Alert
+            title="Multiple File Select"
+            variant="info"
+            style={{ width: "100%", marginTop: "3em" }}
+            actionLinks={
+              <>
+                <AlertActionLink onClick={createFeed}>
+                  Create Feed
+                </AlertActionLink>
+                <AlertActionLink onClick={clearFeed}>Clear</AlertActionLink>
+              </>
+            }
+          >
+            <ChipGroup>
+              {fileSelect.length > 0 &&
+                fileSelect.map((file: string, index) => {
+                  return (
+                    <Chip
+                      onClick={() => {
+                        dispatch({
+                          type: Types.SET_REMOVE_FILE_SELECT,
+                          payload: {
+                            path: file,
+                          },
+                        });
+                      }}
+                      key={index}
+                    >
+                      {file}
+                    </Chip>
+                  );
+                })}
+            </ChipGroup>
+          </Alert>
+        </AlertGroup>
+      )}
+
       <section>
         <Split>
           <UploadComponent
@@ -107,7 +164,22 @@ const DataLibrary = () => {
 
           <SplitItem>
             <Button icon={<FaUpload />} onClick={handleFileModal}>
-              Upload a folder
+              Upload Files
+            </Button>
+            <Button
+              onClick={() => {
+                dispatch({
+                  type: Types.SET_MULTIPLE_FILE_SELECT,
+                  payload: {
+                    active: !multipleFileSelect,
+                  },
+                });
+              }}
+              style={{ marginLeft: "1em" }}
+            >
+              {`Multiple Element Select:${
+                multipleFileSelect === true ? " On" : " Off"
+              }`}
             </Button>
           </SplitItem>
         </Split>

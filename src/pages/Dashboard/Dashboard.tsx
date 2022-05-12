@@ -63,13 +63,17 @@ const DashboardPage = (props: DashboardProps) => {
           Retrieve, analyze, and visualize <i>any data </i> using a powerful
           cloud computing platform: ChRIS.
           <b> Let&apos;s get started.</b>
-          <br/>
-        <span>Version: 3.1.3{"   "}</span>
-        <span>
-          Latest update:{" "}
-          <Moment format="DD MMM YYYY @ HH:mm">{`2022-03-28T10:00:10.297464-04:00`}</Moment>
-        </span>
-  
+          <br />
+          <span>
+            Version: <b>{process.env.REACT_APP_CHRIS_UI_VERSION}</b>{" "}
+          </span>
+          <br />
+          <span>
+            Latest update:{" "}
+            <b>
+              <Moment format="DD MMM YYYY @ HH:mm">{`2022-05-11T15:00:11.007464-04:00`}</Moment>
+            </b>
+          </span>
         </p>
         {children}
       </PageSection>
@@ -86,8 +90,8 @@ const DashboardPage = (props: DashboardProps) => {
                 </div>
               }
               title="You've got data!"
-              body='Visit "My Library" in the main navigation to review your data collection'
-              buttonText="Go to My Library"
+              body='Visit the "Library" in the main navigation to review your data collection'
+              buttonText="Go to the Library"
               buttonLink="/library"
               className="dashboard-carddisplay"
             />
@@ -103,8 +107,8 @@ const DashboardPage = (props: DashboardProps) => {
                 </div>
               }
               title="You've got analyses!"
-              body='Visit "My Analyses" in the main navigation to review your data analyses'
-              buttonText="Go to My Analyses"
+              body='Visit "New and Existing Analyses" in the main navigation to review your data analyses'
+              buttonText="Go to New and Existing Analyses"
               buttonLink="/feeds"
               className="dashboard-carddisplay"
             />
@@ -113,17 +117,17 @@ const DashboardPage = (props: DashboardProps) => {
             <CardDisplay
               component={<LogoComponent logo={outlineSearch} />}
               title="Discover and collect new data"
-              body='Visit "PACS" in the main navigation to look up data and save it your library'
-              buttonText="Query PACS"
+              body='Visit "PACS Query/Retrieve" in the main navigation to pull medical data and save it your library'
+              buttonText="PACS Query/Retrieve"
               buttonLink="/library/pacs"
             />
           </GridItem>
           <GridItem lg={6}>
             <CardDisplay
               component={<LogoComponent logo={magicWand} />}
-              title="Analyze your data"
-              body="You can analyze data using an analysis template or creating a new custom analysis"
-              buttonText="Create New Analysis"
+              title="Run a quick workflow"
+              body='Vist "Run a Quick Workflow" to choose from existing analysis templates that allow for detailed analysis'
+              buttonText="Run a Quick Workflow"
               buttonLink="/workflows"
             />
           </GridItem>
