@@ -162,7 +162,7 @@ To run cypress in the terminal as a headless browser use:
 `npm run cypress:run`
 ```
 
-Running Cypress inside a container is not currently supported
+Running Cypress inside a container is not currently supported.
 
 
 
