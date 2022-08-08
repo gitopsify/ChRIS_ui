@@ -8,7 +8,7 @@ This repository contains the reference UI for ChRIS, allowing users to create an
 
 ![Screenshot](screenshot.png)
 
-## Try it now!!!!
+## Try it now!!!!!!
 
 | URL                           | Description     |
 |-------------------------------|-----------------|
