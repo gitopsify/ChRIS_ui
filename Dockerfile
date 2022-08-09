@@ -31,7 +31,7 @@ FROM node:16 as builder
 WORKDIR /app
 COPY . .
 
-RUN npm run -s print-version
+#RUN npm run -s print-version
 RUN npm install
 RUN npm run build 
 
