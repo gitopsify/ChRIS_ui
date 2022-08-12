@@ -28,14 +28,17 @@
 
 FROM quay.io/fedora/nodejs-16 as builder
 
+USER root
+
 WORKDIR /app
 COPY . .
 
 RUN npm install
 RUN npm run build 
 
+USER 1001
 
-FROM node:16-alpine
+FROM quay.io/fedora/nodejs-16
 
 RUN yarn global add sirv-cli
 
