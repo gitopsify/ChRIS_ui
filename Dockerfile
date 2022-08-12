@@ -3,7 +3,6 @@ FROM quay.io/fedora/nodejs-16 as builder
 WORKDIR /app
 COPY . .
 
-RUN npm run -s print-version
 RUN npm install
 RUN npm run build
 
